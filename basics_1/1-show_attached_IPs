@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
 # Display all active IPv4 addresses on this machine (including localhost)
 
-set -euo pipefail
-ip -4 -o addr show up primary | awk '{split($4, a, "/"); print a[1]}'
-
+ifconfig | grep -oP '(?<=inet\s)\d+(\.\d+){3}'
