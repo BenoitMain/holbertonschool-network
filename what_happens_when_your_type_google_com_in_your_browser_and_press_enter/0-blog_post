@@ -1,0 +1,80 @@
+traduit :
+# What happens when you type https://www.google.com in your browser and press Enter
+
+_This blog post explains, at a high level, the main network and server components involved when you visit a website. It covers DNS, TCP/IP, firewalls, HTTPS/TLS, load balancers, web servers, application servers, and databases._
+
+## 1. URL enter & browser parsing
+When you type https://www.google.com and press Enter, the browser:
+- Parses the URL into scheme (https), host (www.google.com), and path (/).
+- Checks if the page is cached (in-memory, disk cache, or service worker). If cached and valid, the browser may render immediately.
+
+## 2. DNS resolution
+If the browser needs the IP address for www.google.com:
+- It first checks local caches (browser, OS, router).
+- If not cached, the OS resolver asks the configured DNS recursive resolver (ISP or public resolver).
+- The recursive resolver performs iterative queries: root → TLD (.com) → authoritative name server for google.com → returns one or more IPs (often anycasted addresses or CDN/load-balancer IPs).
+- DNS can return multiple A/AAAA records and may include geo/load-balancer-aware results.
+
+Note: DNS lookups are usually over UDP (port 53); DNS-over-HTTPS/TLS may use HTTPS.
+
+## 3. TCP/IP: routing packets to the server
+With the resolved IP:
+- The client establishes a TCP connection to the server IP on port 443 (HTTPS).
+- TCP uses a three-way handshake (SYN → SYN/ACK → ACK). Each packet is routed across the Internet using IP routing (packet forwarding across routers).
+- Along the way, routers consult routing tables to find the next hop; packets may traverse multiple ASes.
+
+## 4. Firewalls and middleboxes
+- Client-side firewall or corporate gateway can block/allow outgoing connections.
+- Network and host firewalls on the path or at the server can filter traffic by IP/port/protocol.
+- Enterprise networks often use proxies, NAT, and DPI boxes which can modify or inspect traffic.
+
+## 5. TLS/HTTPS handshake (security)
+Once TCP is established:
+- The TLS handshake begins to negotiate encryption (cipher suites, versions) and authenticate the server using certificates.
+- The client validates the server certificate chain against trusted CAs and checks hostname matching (www.google.com).
+- Keys are derived and symmetric encryption is established; subsequent HTTP data is encrypted.
+
+This ensures confidentiality and integrity of the HTTP request/response.
+
+## 6. Load balancer and anycast
+Before reaching a particular web server:
+- Large services like Google use load balancers and global anycast to distribute traffic.
+- Anycast advertises the same IP from multiple locations; routing directs you to the nearest/optimal data center.
+- Load balancers (L4 or L7) accept the TLS/TCP connection (or terminate TLS) and forward requests to backend web servers or application servers based on routing, health checks, and session policies.
+
+## 7. Web server (static assets & reverse proxy)
+- A web server (e.g., NGINX, or Google’s custom frontends) may serve static assets or act as reverse proxy.
+- If the request maps to dynamic content, the web server forwards it to an application server or an upstream process (often via HTTP, FastCGI, gRPC, or internal RPC).
+
+## 8. Application server / business logic
+- The application server executes code to handle the request: reading inputs, applying business logic, and orchestrating calls to other services.
+- Modern architectures often split responsibilities into microservices; the web request may invoke multiple internal APIs.
+
+## 9. Database and storage
+- For dynamic content, the application server queries databases (SQL/NoSQL), caches (Redis, Memcached), and object stores.
+- Databases may be sharded, replicated, and placed behind their own load balancers and caching layers.
+- Results are assembled, possibly cached, and returned to the application server.
+
+## 10. Response formation and delivery
+- The application server creates an HTTP response (status, headers, body).
+- The response goes back through the web server/load balancer, is encrypted under TLS, and travels back to the client over TCP.
+- The browser decrypts, parses HTML/CSS/JS, requests additional assets (images, scripts), and renders the page.
+- Additional connections (HTTP/2 multiplexing, persistent connections) optimize performance.
+
+## 11. Closing and optimization
+- TCP connections may be reused (keep-alive), or closed (FIN).
+- CDNs, caches, and client optimizations (prefetch, preconnect) further reduce latency.
+
+## Summary
+Visiting a site involves multiple layers:
+- DNS gives you the IP.
+- TCP/IP routes packets.
+- Firewalls and proxies control access.
+- TLS secures the connection.
+- Load balancers and anycast distribute traffic.
+- Web servers and application servers generate content.
+- Databases and caches store or retrieve data.
+
+Together, these layers provide reliability, performance, and security.
+
+---
