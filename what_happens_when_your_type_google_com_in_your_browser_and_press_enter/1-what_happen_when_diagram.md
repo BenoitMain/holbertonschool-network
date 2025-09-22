@@ -1,5 +1,7 @@
 # Diagram: What happens when you type https://www.google.com and press Enter
 
+![Flow diagram showing DNS → Firewall → Load Balancer → Web Server → App Server → Database](./images/google_request_flow.png)
+
 ```mermaid
 flowchart LR
   Browser["Browser\nhttps://www.google.com"]
@@ -28,5 +30,4 @@ flowchart LR
   LB -->|TLS encrypted response| Browser
 ```
 
-Short description / alt text: Diagram flow — Browser → DNS resolution → TCP/TLS to server IP (port 443) → Firewall → Load Balancer → Web Server → Application Server → Database.  
-Render note: GitHub peut afficher mermaid nativement selon le repo/paramètres ; sinon ouvrez le fichier en preview VS Code ou exportez en PNG.
+Short description / alt text: Diagram flow — Browser → DNS → TCP/TLS → Firewall → LB → Web → App → DB.
