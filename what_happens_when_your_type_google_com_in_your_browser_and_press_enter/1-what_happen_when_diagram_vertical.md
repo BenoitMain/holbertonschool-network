@@ -1,3 +1,4 @@
+```mermaid
 flowchart TB
   %% Nodes
   user["Client / Browser"]
@@ -32,4 +33,5 @@ flowchart TB
   %% Extra annotations
   click web "#"
   click lb "#"
+```
 
