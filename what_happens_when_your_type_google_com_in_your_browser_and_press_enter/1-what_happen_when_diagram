@@ -1,0 +1,25 @@
+sequenceDiagram
+autonumber
+actor User as Browser (Client)
+participant DNS as DNS Resolver
+participant FW as Firewall
+participant LB as Load Balancer
+participant WEB as Web Server (HTTPS :443)
+participant APP as Application Server
+participant DB as Database
+
+User->>DNS: Resolve google.com (A/AAAA)
+DNS-->>User: IP address
+Note over User,WEB: 🔐 HTTPS/TLS handshake on port 443
+
+User->>FW: TCP SYN to IP:443 (encrypted)
+FW-->>User: Policy check (allow)
+FW->>LB: Forward encrypted traffic
+
+LB->>WEB: Distribute request (L7)
+WEB->>APP: Forward request (HTTPS/TLS)
+APP->>DB: Request data (SQL/query)
+DB-->>APP: Rows / records
+
+APP-->>WEB: Rendered HTML
+WEB-->>User: HTTP 200 OK (encrypted)
